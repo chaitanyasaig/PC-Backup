@@ -1,0 +1,102 @@
+cp ~/.bashrc ~/.bashrc.bak
+vi ~/.bashrc
+
+										     INSTALLATION SETUP OF KUBERNETES ON MASTER AND NODES
+
+																On master:
+------------------------------------------
+Need to execute all the steps:
+Step 1)
+apt-get update && apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl
+
+
+systemctl daemon-reload
+systemctl restart kubelet
+
+
+Step 2)
+Docker to be installed on Master. Below we have steps to install Docker.
+
+Step 3)
+To create the cluster:
+kubeadm init
+kubeadm init --ignore-preflight-errors=all
+
+After creation of cluster:
+Step -1) On master: with normal user.
+	mkdir -p $HOME/.kube
+	sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+	sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+Step -4)  Neeed to install networking components Weavenet or kube-router etc
+ Network componet installation:
+ 
+ kubectl apply --filename https://git.io/weave-kube-1.6
+ 
+----------------------------------------------------------------------------------------------------- 
+
+
+Step 1)																	On nodes:
+To join the node to  the cluster:
+
+kubeadm join 172.31.30.75:6443 --token u886zj.py17a4zo73z61jf1 \
+    --discovery-token-ca-cert-hash sha256:d8aa55a1805773aa8bdddb7bb591e1c8419820910a0e9fc3f79806839184f66a
+
+kubectl get nodes
+kubectl get pods --all-namespaces
+------------------------------------------------------------------------------
+
+Docker installation:
+---------------------
+step 1)
+sudo apt-get update
+
+step 2)
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+
+step 3)	
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+step 4)
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+step 5)
+sudo apt-get update
+
+step 6)
+sudo apt-get install docker-ce docker-ce-cli containerd.io   
+
+-------------------------------------------------------
+Problem : When nodes are not ready for moretime check network plugin and install it.
+
+Problem:  Kube Master ==> kubectl get nodes
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+--------------------------------------------------
+
+kubectl expose pod mypod --type=NodePort
+
+
+
+
+
+
